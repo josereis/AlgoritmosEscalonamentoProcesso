@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import entity.Processo;
+import entity.ProcessoAbstract;
 
 public class RoundRobin {
 	private final int QUANTUM = 2; // Valor de um QUANTUM, tempo de execução de um ciclo na CPU
@@ -13,8 +14,8 @@ public class RoundRobin {
 	private float tempoMedioEspera;
 	private float tempoMedioRetorno;
 	private float tempoMedioResposta;
-	private Queue<Processo> filaProcessos = new LinkedList<Processo>(); // Fila de processos prontos
-	private Queue<Processo> filaRR = new LinkedList<Processo>(); // Fila do Round Robin
+	private Queue<ProcessoAbstract> filaProcessos = new LinkedList<ProcessoAbstract>(); // Fila de processos prontos
+	private Queue<ProcessoAbstract> filaRR = new LinkedList<ProcessoAbstract>(); // Fila do Round Robin
 	
 	public int getTempoSistema() {
 		return tempoSistema;
@@ -56,11 +57,11 @@ public class RoundRobin {
 		this.tempoMedioResposta = tempoMedioResposta;
 	}
 
-	public Queue<Processo> getFilaProcessos() {
+	public Queue<ProcessoAbstract> getFilaProcessos() {
 		return filaProcessos;
 	}
 
-	public void setFilaProcessos(Queue<Processo> filaProcessos) {
+	public void setFilaProcessos(Queue<ProcessoAbstract> filaProcessos) {
 		this.filaProcessos = filaProcessos;
 	}
 	
@@ -74,7 +75,7 @@ public class RoundRobin {
 	}
 	
 	public void start() {
-		Processo processo = new Processo();
+		ProcessoAbstract processo = new Processo();
 		
 		addProcessoFilaRR();
 		
@@ -95,15 +96,15 @@ public class RoundRobin {
 					this.tempoSistema += processo.getTempoDuracao();
 					processo.setTempoDuracao(0);
 				} else {
-					this.tempoSistema += 2;
-					processo.setTempoDuracao(processo.getTempoDuracao() - 2);
+					this.tempoSistema += QUANTUM;
+					processo.setTempoDuracao(processo.getTempoDuracao() - QUANTUM);
 				}
 				
 				/**
 				 * Apos a atualização do tempo de sistema, é preciso garantir que os processos que possuem tempo de chegada menor ou igual ao tempo atual de sistema
 				 * entrem na fila do Round Robin (filaRR) antes de inserir novamente o processo que esta ocupando o processador.
 				 */
-				addProcessoFilaRR();
+				addProcessoFilaRR(); // adiciona os processo a fila de escalonamento de acordo com o valor do tempo corrente (que esta sendo simulado)
 				
 				// verificar se o processo foi encerrado ou se ainda deve ser inserido na fila
 				if(processo.getTempoDuracao() > 0) {
@@ -120,7 +121,7 @@ public class RoundRobin {
 		}
 	}
 
-	public RoundRobin(Queue<Processo> filaProcessos) {
+	public RoundRobin(Queue<ProcessoAbstract> filaProcessos) {
 		this.tempoSistema = 0;
 		this.tempoMedioEspera = 0;
 		this.tempoMedioRetorno = 0;
