@@ -2,10 +2,11 @@ package scheduling_algorithms;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 import entity.ProcessoAbstract;
-import entity.ProcessoPriority;
+import entity.Processo;
 
 public class DynamicPriority {
 	private static final int QUANTUM = 2; // Valor de um QUANTUM, tempo de execução de um ciclo na CPU
@@ -17,8 +18,8 @@ public class DynamicPriority {
 	private float tempoMedioRetorno;
 	private float tempoMedioResposta;
 	
-	private Queue<ProcessoPriority> filaProcessos = new LinkedList<ProcessoPriority>();
-	private ArrayList<ProcessoPriority> listaPriDynamic = new ArrayList<ProcessoPriority>();
+	private Queue<ProcessoAbstract> filaProcessos = new LinkedList<ProcessoAbstract>();
+	private List<ProcessoAbstract> listaProcessosEscalonador = new ArrayList<ProcessoAbstract>();
 	
 	public int getPriorityMax() {
 		return priorityMax;
@@ -68,107 +69,97 @@ public class DynamicPriority {
 		this.tempoMedioResposta = tempoMedioResposta;
 	}
 	
-	public Queue<ProcessoPriority> getFilaProcessos() {
+	public Queue<ProcessoAbstract> getFilaProcessos() {
 		return filaProcessos;
 	}
 
-	public void setFilaProcessos(Queue<ProcessoPriority> filaProcessos) {
+	public void setFilaProcessos(Queue<ProcessoAbstract> filaProcessos) {
 		this.filaProcessos = filaProcessos;
 	}
-
-	public ArrayList<ProcessoPriority> getListaPriDynamic() {
-		return listaPriDynamic;
-	}
-
-	public void setListaPriDynamic(ArrayList<ProcessoPriority> filaPriDynamic) {
-		this.listaPriDynamic = filaPriDynamic;
-	}
 	
-	/**
-	 * Adiciona os processos que possuem um tempo de chegada menor ou igual a tempo de sistema a fila de processos (filaRR) utilizada pelo Round Robin
-	 */
-	public void addProcessoFilaPriorityDynamic() {
-		while(this.filaProcessos.peek() != null && this.tempoSistema >= this.filaProcessos.peek().getTempoChegada()) {
-			listaPriDynamic.add(this.filaProcessos.poll());
+	// adiciona os processos que chegam ao escalonador de acordo com o tempo
+	private void InsertListaProcessoEscalonador() {
+		while(filaProcessos.peek() != null && filaProcessos.peek().getTempoChegada() <= this.tempoSistema) {
+			listaProcessosEscalonador.add(filaProcessos.poll());
 		}
 	}
 	
-	public ProcessoPriority getProcessoPriorityMax() {
-		int max = 0;
-		ProcessoPriority processo = null;
+	private ProcessoAbstract assumirCPU() {
+		int indice = 0; // inicializa com o indice do primeiro elemento da lista
+		ProcessoAbstract processo = ((Processo) listaProcessosEscalonador.get(indice)); // inicia a busca pelo processo de maior prioridade a partir do primeiro processo da lista
 		
-		// busca na lista de processo prontos o processo de maior prioridade
-		for(ProcessoPriority p: listaPriDynamic) {
-			if(p.getPrioridade() > max) {
-				processo = p;
-				max = processo.getPrioridade();
+		for(int i = 1; i < listaProcessosEscalonador.size(); i++) {
+			if(((Processo) processo).getPrioridade() < ((Processo) listaProcessosEscalonador.get(i)).getPrioridade()) {
+				indice = i;
+				processo = listaProcessosEscalonador.get(indice);
 			}
 		}
-		
-		if(processo != null) // remove o processo da lista de processos prontos
-			listaPriDynamic.remove(processo);
+		listaProcessosEscalonador.remove(indice); // remove da lista de prontos o processo que vai assumir a CPU
 		
 		return processo;
 	}
 	
-	public void updatePriorityProcessos(int value) {
-		for(ProcessoPriority p: listaPriDynamic) {
-			p.setPrioridade(p.getPrioridade() + value);
+	private void atualizarPrioridade(int valor) {
+		for(ProcessoAbstract p: listaProcessosEscalonador) {
+			((Processo) p).setPrioridade(((Processo) p).getPrioridade() + valor);
 		}
 	}
 	
-	
 	public void start() {
-		ProcessoPriority processo = new ProcessoPriority();
+		InsertListaProcessoEscalonador(); // adiciona os processo que entraram no sistema
 		
-		addProcessoFilaPriorityDynamic();
-		while((this.filaProcessos.peek() != null) || (this.listaPriDynamic.size() > 0)) {
-			if(this.listaPriDynamic.size() > 0) {
-				processo = getProcessoPriorityMax(); // pega o processo que deve ocupar as CPU
+		// enquanto existir algum processo na lista do escalonador ou na fila de processos
+		while(!listaProcessosEscalonador.isEmpty() || filaProcessos.peek() != null) {
+			// para o caso de não existirem processos prontos no escalonador, mas existirem processo na fila de processo de entrada
+			if(listaProcessosEscalonador.isEmpty()) {
+				this.tempoSistema = filaProcessos.peek().getTempoChegada(); // atualiza o tempo do sistema para o tempo de chegada do proximo processo a entrar no estado de pronto
+				InsertListaProcessoEscalonador();
+			} else {
+				ProcessoAbstract processo = assumirCPU(); // proscesso de maior prioridade assume a CPU
+				System.out.println("Processo que assumiu CPU: " + ((Processo)processo).toString());
 				
-				// verifica se é a primeira vez do processo ocupando a CPU
+				// verifica se é a primeira vez do processo assumindo a CPU
 				if(processo.isFirstResponse()) {
-					this.tempoMedioResposta += this.tempoSistema - processo.getTempoChegada();
 					processo.setFirstResponse(false);
+					this.tempoMedioResposta += this.tempoSistema - processo.getTempoChegada();
 				}
+				// pega o valor do perido que o processo ficou no estado de pronto ate sua entrada na CPU
 				this.tempoMedioEspera += this.tempoSistema - processo.getTempoEntrada();
 				
-				int value=0;
+				// verifica se a duração do processo é menor que o valor de um QUANTUM
 				if(processo.getTempoDuracao() < QUANTUM) {
-					value = processo.getTempoDuracao();
-					this.tempoSistema += value;
+					this.tempoSistema += processo.getTempoDuracao();
+					atualizarPrioridade(processo.getTempoDuracao()); // atualizar o valor das prioridades dos processo no estado de pronto
+					((Processo) processo).setPrioridade(((Processo) processo).getPrioridade() - processo.getTempoDuracao()); // atualiza o valor da prioridade do processo que esta na CPU
 					processo.setTempoDuracao(0);
-					processo.setPrioridade(processo.getPrioridade() - value);
 				} else {
-					value = QUANTUM;
 					this.tempoSistema += QUANTUM;
-					processo.setPrioridade(processo.getPrioridade() - QUANTUM);
+					atualizarPrioridade(QUANTUM);
+					((Processo) processo).setPrioridade(((Processo) processo).getPrioridade() - QUANTUM); // atualiza o valor da prioridade do processo que esta na CPU
 					processo.setTempoDuracao(processo.getTempoDuracao() - QUANTUM);
 				}
+					
+				InsertListaProcessoEscalonador(); // atualiza a lista de processos prontos com relação ao tempo de sistema
 				
-				addProcessoFilaPriorityDynamic(); // adiciona o processo que entraram na lista de prontos apos atualização do tempo do sistema
-				updatePriorityProcessos(value); // atualiza o valor da prioridade dos processo na lista de prontos
-				
-				// verificar se o processo foi encerrado ou se ainda deve ser inserido na fila
-				if(processo.getTempoDuracao() > 0) {
-					processo.setTempoEntrada(this.tempoSistema);
-					listaPriDynamic.add(processo);
+				// verifica se o processo foi encerrado
+				if(processo.getTempoDuracao() <= 0) {
+					this.tempoMedioRetorno += this.tempoSistema - processo.getTempoChegada();
 				} else {
-					this.tempoMedioRetorno += this.tempoSistema - processo.getTempoChegada(); // para o caso do processo não ser mais inserido a fila, considera-se que ele ja retornou
+					processo.setTempoEntrada(this.tempoSistema);
+					listaProcessosEscalonador.add(listaProcessosEscalonador.size(), processo);
 				}
-				
-			} else { // caso nenhum processo tenha chegado no tempo de sistema corrente
-				this.tempoSistema = filaProcessos.peek().getTempoChegada();
-				addProcessoFilaPriorityDynamic();
 			}
 		}
 	}
 	
-	public DynamicPriority() {
+	
+	public DynamicPriority(Queue<ProcessoAbstract> filaProcessos) {
 		this.priorityMax = 5;
 		this.tempoSistema = 0;
 		this.tempoMedioEspera = 0;
 		this.tempoMedioRetorno = 0;
 		this.tempoMedioResposta = 0;
+		this.filaProcessos = filaProcessos;
+		this.numeroProcessos = filaProcessos.size();
 	}
 }
