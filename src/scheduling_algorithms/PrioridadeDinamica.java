@@ -107,7 +107,7 @@ public class PrioridadeDinamica {
 				InserirProcessoListaProntos();
 			} else {
 				ProcessoAbstract processo = assumirCPU(); // proscesso de maior prioridade assume a CPU
-				System.out.println("Processo que assumiu CPU: " + ((Processo)processo).toString());
+//				System.out.println("Processo que assumiu CPU: " + ((Processo)processo).toString());
 				
 				// verifica se é a primeira vez do processo assumindo a CPU
 				if(processo.isFirstResponse()) {

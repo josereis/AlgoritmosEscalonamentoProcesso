@@ -85,7 +85,7 @@ public class Loteria {
 	private ProcessoAbstract assumirCPU() {
 		Random r = new Random();
 		int indice = r.nextInt(listaProcessoLoteria.size());
-		System.out.println("MAX: " + listaProcessoLoteria.size()+" - i: " + indice);
+		
 		ProcessoAbstract processo = listaProcessoLoteria.get(indice);
 		listaProcessoLoteria.remove(indice); // remove da lista de prontos
 		
@@ -102,7 +102,7 @@ public class Loteria {
 				InserirProcessoListaProntos();
 			} else {
 				ProcessoAbstract processo = assumirCPU();
-				System.out.println("Processo que assumiu CPU: " + processo.toString());
+//				System.out.println("Processo que assumiu CPU: " + processo.toString());
 				
 				// verifica se é a primeira vez do processo assumindo a CPU
 				if(processo.isFirstResponse()) {
