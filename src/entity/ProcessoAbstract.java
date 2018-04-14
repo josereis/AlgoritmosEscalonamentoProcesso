@@ -13,7 +13,7 @@ public abstract class ProcessoAbstract implements Comparable<ProcessoAbstract> {
 	private int id;
 	private int tempoChegada;
 	private int tempoDuracao;
-	private int tempoEntrada;
+	private int tempoEntradaEstadoPronto;
 	private boolean isFirstResponse;
 	
 	public int getId() {
@@ -41,11 +41,11 @@ public abstract class ProcessoAbstract implements Comparable<ProcessoAbstract> {
 	}
 
 	public int getTempoEntrada() {
-		return tempoEntrada;
+		return tempoEntradaEstadoPronto;
 	}
 
 	public void setTempoEntrada(int tempoEntrada) {
-		this.tempoEntrada = tempoEntrada;
+		this.tempoEntradaEstadoPronto = tempoEntrada;
 	}
 	
 
@@ -70,14 +70,20 @@ public abstract class ProcessoAbstract implements Comparable<ProcessoAbstract> {
 		}
 	}
 	
+	public String toString() {
+		return "PID: " + getId()+" - Tempo Chegada: " + getTempoChegada() + " - Duração: " + getTempoDuracao() + " - Entrada no Estado de Pronto: " + getTempoEntrada();
+	}
+	
 	public ProcessoAbstract() {
 		
 	}
 	
-	public ProcessoAbstract(int tempoChegada, int tempoDuracao) {
-		this.id = tempoChegada;
+	public ProcessoAbstract(int id, int tempoChegada, int tempoDuracao) {
+		this.id = id;
 		this.tempoChegada = tempoChegada;
 		this.tempoDuracao = tempoDuracao;
+		this.tempoEntradaEstadoPronto = this.tempoChegada;
+		this.isFirstResponse = true;
 	}
 	
 }
