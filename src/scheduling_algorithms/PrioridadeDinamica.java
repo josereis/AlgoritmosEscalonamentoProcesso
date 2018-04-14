@@ -8,10 +8,9 @@ import java.util.Queue;
 import entity.ProcessoAbstract;
 import entity.Processo;
 
-public class DynamicPriority {
+public class PrioridadeDinamica {
 	private static final int QUANTUM = 2; // Valor de um QUANTUM, tempo de execução de um ciclo na CPU
 	
-	private int priorityMax;
 	private int tempoSistema; // Armazena o tempo atual do sistema;
 	private int numeroProcessos; // Armazena a quantidadde de processos que serão armazenados
 	private float tempoMedioEspera;
@@ -20,14 +19,6 @@ public class DynamicPriority {
 	
 	private Queue<ProcessoAbstract> filaProcessos = new LinkedList<ProcessoAbstract>();
 	private List<ProcessoAbstract> listaProcessosEscalonador = new ArrayList<ProcessoAbstract>();
-	
-	public int getPriorityMax() {
-		return priorityMax;
-	}
-
-	public void setPriorityMax(int priorityMax) {
-		this.priorityMax = priorityMax;
-	}
 	
 	public int getTempoSistema() {
 		return tempoSistema;
@@ -78,7 +69,7 @@ public class DynamicPriority {
 	}
 	
 	// adiciona os processos que chegam ao escalonador de acordo com o tempo
-	private void InsertListaProcessoEscalonador() {
+	private void InserirProcessoListaProntos() {
 		while(filaProcessos.peek() != null && filaProcessos.peek().getTempoChegada() <= this.tempoSistema) {
 			listaProcessosEscalonador.add(filaProcessos.poll());
 		}
@@ -106,14 +97,14 @@ public class DynamicPriority {
 	}
 	
 	public void start() {
-		InsertListaProcessoEscalonador(); // adiciona os processo que entraram no sistema
+		InserirProcessoListaProntos(); // adiciona os processo que entraram no sistema
 		
 		// enquanto existir algum processo na lista do escalonador ou na fila de processos
 		while(!listaProcessosEscalonador.isEmpty() || filaProcessos.peek() != null) {
 			// para o caso de não existirem processos prontos no escalonador, mas existirem processo na fila de processo de entrada
 			if(listaProcessosEscalonador.isEmpty()) {
 				this.tempoSistema = filaProcessos.peek().getTempoChegada(); // atualiza o tempo do sistema para o tempo de chegada do proximo processo a entrar no estado de pronto
-				InsertListaProcessoEscalonador();
+				InserirProcessoListaProntos();
 			} else {
 				ProcessoAbstract processo = assumirCPU(); // proscesso de maior prioridade assume a CPU
 				System.out.println("Processo que assumiu CPU: " + ((Processo)processo).toString());
@@ -139,7 +130,7 @@ public class DynamicPriority {
 					processo.setTempoDuracao(processo.getTempoDuracao() - QUANTUM);
 				}
 					
-				InsertListaProcessoEscalonador(); // atualiza a lista de processos prontos com relação ao tempo de sistema
+				InserirProcessoListaProntos(); // atualiza a lista de processos prontos com relação ao tempo de sistema
 				
 				// verifica se o processo foi encerrado
 				if(processo.getTempoDuracao() <= 0) {
@@ -153,8 +144,7 @@ public class DynamicPriority {
 	}
 	
 	
-	public DynamicPriority(Queue<ProcessoAbstract> filaProcessos) {
-		this.priorityMax = 5;
+	public PrioridadeDinamica(Queue<ProcessoAbstract> filaProcessos) {
 		this.tempoSistema = 0;
 		this.tempoMedioEspera = 0;
 		this.tempoMedioRetorno = 0;

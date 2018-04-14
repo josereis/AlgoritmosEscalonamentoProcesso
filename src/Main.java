@@ -3,14 +3,14 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import entity.ProcessoAbstract;
-import scheduling_algorithms.DynamicPriority;
+import scheduling_algorithms.PrioridadeDinamica;
 import scheduling_algorithms.RoundRobin;
 import utils.FileManipulation;
 
 public class Main {
 	
 	public static void main(String[] args) {
-		RoundRobin RR; DynamicPriority pd;
+		RoundRobin RR; PrioridadeDinamica pd;
 		try {
 			Queue<ProcessoAbstract> filaProcessos = FileManipulation.getFilaProcessosFile();
 			System.out.println("ROUND ROBIN = " + filaProcessos.size());
@@ -28,7 +28,7 @@ public class Main {
 			
 			filaProcessos = FileManipulation.getFilaProcessosFile();
 			System.out.println("PRIORIDADE DINAMICA = " + filaProcessos.size());
-			pd = new DynamicPriority(filaProcessos);
+			pd = new PrioridadeDinamica(filaProcessos);
 			
 			pd.start();
 			

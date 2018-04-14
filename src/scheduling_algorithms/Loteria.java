@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import entity.ProcessoAbstract;
 
-public class Lottery {
+public class Loteria {
 	private static final int QUANTUM = 2; // Valor de um QUANTUM, tempo de execução de um ciclo na CPU
 	
 	private int tempoSistema;
@@ -75,11 +75,11 @@ public class Lottery {
 		
 	}
 
-	public Lottery() {
+	public Loteria() {
 		
 	}
 	
-	public Lottery(ArrayList<ProcessoAbstract> listaProcessos) {
+	public Loteria(ArrayList<ProcessoAbstract> listaProcessos) {
 		this.tempoSistema = 0;
 		this.tempoMedioEspera = 0;
 		this.tempoMedioRetorno = 0;
