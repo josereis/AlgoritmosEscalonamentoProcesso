@@ -3,8 +3,8 @@ package scheduling_algorithms;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import entity.Processo;
 import entity.ProcessoAbstract;
+import entity.Processo;
 
 public class RoundRobin {
 	private final int QUANTUM = 2; // Valor de um QUANTUM, tempo de execução de um ciclo na CPU
@@ -78,7 +78,7 @@ public class RoundRobin {
 		ProcessoAbstract processo = new Processo();
 		
 		addProcessoFilaRR();
-		
+		// System.out.println("Round Robin: fila size - "+filaRR.size());
 		while(filaProcessos.peek() != null || filaRR.peek() != null) { // Enquanto existir processos na fila de prontos ou na fila auxiliar criada o escalonador continua a execultar
 			// verifica se existe algum processo na fila
 			if(filaRR.peek() != null) {
@@ -86,6 +86,8 @@ public class RoundRobin {
 				
 				// verifica se é a primeira vez do processo assumindo a CPU
 				if(processo.isFirstResponse()) {
+					//System.out.println("soma tempo resposta: " + (this.tempoSistema - processo.getTempoChegada()));
+					
 					this.tempoMedioResposta += this.tempoSistema - processo.getTempoChegada();
 					processo.setFirstResponse(false); // seta valor informando que o processo ja passou pela CPU ao menos uma vez
 				}
@@ -105,7 +107,7 @@ public class RoundRobin {
 				 * entrem na fila do Round Robin (filaRR) antes de inserir novamente o processo que esta ocupando o processador.
 				 */
 				addProcessoFilaRR(); // adiciona os processo a fila de escalonamento de acordo com o valor do tempo corrente (que esta sendo simulado)
-				
+
 				// verificar se o processo foi encerrado ou se ainda deve ser inserido na fila
 				if(processo.getTempoDuracao() > 0) {
 					processo.setTempoEntrada(this.tempoSistema);
